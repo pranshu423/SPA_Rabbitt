@@ -42,8 +42,13 @@ function App() {
       console.error(error);
       const backendError = error.response?.data?.error;
       const backendDetail = error.response?.data?.detail;
-      const message = backendDetail ? `${backendError}: ${backendDetail}` : (backendError || 'Failed to process the request. Please try again.');
-      toast.error(message, { duration: 6000 });
+      const backendDebug = error.response?.data?.debug;
+      
+      let message = backendError || 'Failed to process request';
+      if (backendDetail) message += `: ${backendDetail}`;
+      if (backendDebug?.code) message += ` (Code: ${backendDebug.code})`;
+      
+      toast.error(message, { duration: 10000 });
     } finally {
       setLoading(false);
     }
