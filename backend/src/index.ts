@@ -128,8 +128,13 @@ app.post('/api/analyze', upload.single('file'), async (req, res) => {
         
         Please provide a concise, executive-level summary of this data. Identify the top performing items, key trends, and any noticeable areas of concern. Format the summary professionally with bullet points.`;
 
-        const modelName = 'models/gemini-1.5-flash';
-        console.log(`[v1.0.4] ${new Date().toISOString()} | Using Gemini model path: ${modelName}`);
+        const modelName = 'gemini-1.5-flash';
+        console.log(`[v1.0.5] ${new Date().toISOString()} | Using Gemini model: ${modelName}`);
+        
+        if (!process.env.GEMINI_API_KEY) {
+            throw new Error('GEMINI_API_KEY is not defined in environment variables.');
+        }
+
         const model = genAI.getGenerativeModel({ model: modelName });
         const aiResult = await model.generateContent(prompt);
         const aiResponse = await aiResult.response;
@@ -180,7 +185,12 @@ app.post('/api/analyze', upload.single('file'), async (req, res) => {
 
 // Basic Healthcheck
 app.get('/health', (req, res) => {
-    res.json({ status: 'OK', version: '1.0.4', deployedAt: new Date().toISOString() });
+    res.json({ 
+        status: 'OK', 
+        version: '1.0.5', 
+        hasApiKey: !!process.env.GEMINI_API_KEY,
+        deployedAt: new Date().toISOString() 
+    });
 });
 
 // Use http.createServer to keep the process alive (Express 5 compatibility)
