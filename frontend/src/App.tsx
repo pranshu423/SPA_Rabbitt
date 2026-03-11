@@ -40,7 +40,10 @@ function App() {
       setEmail('');
     } catch (error: any) {
       console.error(error);
-      toast.error(error.response?.data?.error || 'Failed to process the request. Please try again.');
+      const backendError = error.response?.data?.error;
+      const backendDetail = error.response?.data?.detail;
+      const message = backendDetail ? `${backendError}: ${backendDetail}` : (backendError || 'Failed to process the request. Please try again.');
+      toast.error(message, { duration: 6000 });
     } finally {
       setLoading(false);
     }
