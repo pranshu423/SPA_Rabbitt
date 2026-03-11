@@ -128,8 +128,8 @@ app.post('/api/analyze', upload.single('file'), async (req, res) => {
         
         Please provide a concise, executive-level summary of this data. Identify the top performing items, key trends, and any noticeable areas of concern. Format the summary professionally with bullet points.`;
 
-        const modelName = 'gemini-1.5-flash';
-        console.log(`[v1.0.3] ${new Date().toISOString()} | Using Gemini model: ${modelName}`);
+        const modelName = 'models/gemini-1.5-flash';
+        console.log(`[v1.0.4] ${new Date().toISOString()} | Using Gemini model path: ${modelName}`);
         const model = genAI.getGenerativeModel({ model: modelName });
         const aiResult = await model.generateContent(prompt);
         const aiResponse = await aiResult.response;
@@ -164,17 +164,23 @@ app.post('/api/analyze', upload.single('file'), async (req, res) => {
 
     } catch (error: any) {
         console.error('Error in /api/analyze:', error.message);
-        console.error('Full error:', error);
+        console.error('Full error object:', JSON.stringify(error, null, 2));
         return res.status(500).json({ 
             error: 'Internal server error while processing the request.',
-            detail: error.message 
+            detail: error.message,
+            debug: {
+                message: error.message,
+                name: error.name,
+                stack: error.stack,
+                code: error.code
+            }
         });
     }
 });
 
 // Basic Healthcheck
 app.get('/health', (req, res) => {
-    res.json({ status: 'OK', version: '1.0.3', deployedAt: '2026-03-11T19:08:00Z' });
+    res.json({ status: 'OK', version: '1.0.4', deployedAt: new Date().toISOString() });
 });
 
 // Use http.createServer to keep the process alive (Express 5 compatibility)
