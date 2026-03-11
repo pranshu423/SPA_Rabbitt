@@ -129,7 +129,7 @@ app.post('/api/analyze', upload.single('file'), async (req, res) => {
         Please provide a concise, executive-level summary of this data. Identify the top performing items, key trends, and any noticeable areas of concern. Format the summary professionally with bullet points.`;
 
         const modelName = 'gemini-1.5-flash';
-        console.log(`[v1.0.2] Using Gemini model: ${modelName}`);
+        console.log(`[v1.0.3] ${new Date().toISOString()} | Using Gemini model: ${modelName}`);
         const model = genAI.getGenerativeModel({ model: modelName });
         const aiResult = await model.generateContent(prompt);
         const aiResponse = await aiResult.response;
@@ -174,7 +174,7 @@ app.post('/api/analyze', upload.single('file'), async (req, res) => {
 
 // Basic Healthcheck
 app.get('/health', (req, res) => {
-    res.json({ status: 'OK', version: '1.0.2' });
+    res.json({ status: 'OK', version: '1.0.3', deployedAt: '2026-03-11T19:08:00Z' });
 });
 
 // Use http.createServer to keep the process alive (Express 5 compatibility)
