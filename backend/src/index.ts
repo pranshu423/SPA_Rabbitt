@@ -2,7 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import multer from 'multer';
 import * as xlsx from 'xlsx';
-import { GoogleGenAI } from '@google/genai';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 import nodemailer from 'nodemailer';
 import dotenv from 'dotenv';
 import swaggerUi from 'swagger-ui-express';
@@ -58,7 +58,7 @@ const swaggerDocs = swaggerJsDoc(swaggerOptions);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
 // Initialize Gemini Core SDK
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
 
 // Configure Nodemailer Transport
 const transporter = nodemailer.createTransport({
@@ -122,17 +122,17 @@ app.post('/api/analyze', upload.single('file'), async (req, res) => {
         const summaryData = JSON.stringify(rawData.slice(0, 100));
 
         // Generate AI Summary
+        console.log('Starting Gemini AI summary generation...');
         const prompt = `You are an expert sales analyst. The following is sales data for the quarter: 
         ${summaryData}
         
         Please provide a concise, executive-level summary of this data. Identify the top performing items, key trends, and any noticeable areas of concern. Format the summary professionally with bullet points.`;
 
-        const aiResponse = await ai.models.generateContent({
-            model: 'gemini-2.5-flash',
-            contents: prompt,
-        });
-
-        const report = aiResponse.text;
+        const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
+        const aiResult = await model.generateContent(prompt);
+        const aiResponse = await aiResult.response;
+        const report = aiResponse.text();
+        console.log('Gemini AI summary generated successfully.');
 
         if (!report) {
             throw new Error('Could not generate AI response.');
@@ -147,8 +147,10 @@ app.post('/api/analyze', upload.single('file'), async (req, res) => {
             html: `<h2>Sales Quarterly Brief</h2><p>${report.replace(/\n/g, '<br/>')}</p>`
         };
 
+        console.log('Sending email to:', recipientEmail);
         if (process.env.SMTP_USER && process.env.SMTP_PASS) {
             await transporter.sendMail(mailOptions);
+            console.log('Email sent successfully to:', recipientEmail);
         } else {
              console.log("Mock Email (Credentials missing):", mailOptions);
         }
@@ -159,9 +161,12 @@ app.post('/api/analyze', upload.single('file'), async (req, res) => {
         });
 
     } catch (error: any) {
-        console.error('Error in /api/analyze:', Math.random());
-        console.error('Error detail:', error.message);
-        return res.status(500).json({ error: 'Internal server error while processing the request.' });
+        console.error('Error in /api/analyze:', error.message);
+        console.error('Full error:', error);
+        return res.status(500).json({ 
+            error: 'Internal server error while processing the request.',
+            detail: error.message 
+        });
     }
 });
 
