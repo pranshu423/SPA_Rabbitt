@@ -14,7 +14,22 @@ const app = express();
 const port = process.env.PORT || 5000;
 
 // Middleware
-app.use(cors());
+const allowedOrigins = [
+    'http://localhost:5173',
+    'http://localhost:80',
+    'http://localhost',
+    'https://spa-rabbitt.vercel.app',
+];
+app.use(cors({
+    origin: function (origin, callback) {
+        // Allow requests with no origin (like mobile apps or curl requests)
+        if (!origin) return callback(null, true);
+        if (allowedOrigins.indexOf(origin) !== -1) {
+            return callback(null, true);
+        }
+        return callback(new Error('Not allowed by CORS'));
+    }
+}));
 app.use(express.json());
 
 // Store files in memory buffer

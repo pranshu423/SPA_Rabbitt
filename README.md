@@ -10,8 +10,8 @@ A secure, containerized **Quick-Response Tool** that enables sales teams to uplo
 
 | Service | URL |
 |---------|-----|
-| **Frontend (Vercel)** | _Deploy via instructions below_ |
-| **Backend API Docs (Render)** | _Deploy via instructions below_ |
+| **Frontend (Vercel)** | [https://spa-rabbitt.vercel.app](https://spa-rabbitt.vercel.app) |
+| **Backend API Docs (Render)** | [https://spa-rabbitt-backend.onrender.com/api-docs](https://spa-rabbitt-backend.onrender.com/api-docs) |
 
 ---
 
