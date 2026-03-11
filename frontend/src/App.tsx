@@ -32,6 +32,7 @@ function App() {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
+        timeout: 120000, // 2 minutes to account for Render cold start + AI processing
       });
       
       toast.success(response.data.message || 'AI Summary generated and email sent successfully!');
