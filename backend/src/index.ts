@@ -128,21 +128,29 @@ app.post('/api/analyze', upload.single('file'), async (req, res) => {
         
         Please provide a concise, executive-level summary of this data. Identify the top performing items, key trends, and any noticeable areas of concern. Format the summary professionally with bullet points.`;
 
-        const modelName = 'gemini-1.5-flash';
-        console.log(`[v1.0.5] ${new Date().toISOString()} | Using Gemini model: ${modelName}`);
-        
-        if (!process.env.GEMINI_API_KEY) {
-            throw new Error('GEMINI_API_KEY is not defined in environment variables.');
+        const modelsToTry = ['gemini-1.5-flash', 'gemini-1.5-flash-latest', 'gemini-pro'];
+        let report = '';
+        let lastError = null;
+
+        for (const modelName of modelsToTry) {
+            try {
+                console.log(`[v1.0.6] Trying Gemini model: ${modelName}`);
+                const model = genAI.getGenerativeModel({ model: modelName });
+                const aiResult = await model.generateContent(prompt);
+                const aiResponse = await aiResult.response;
+                report = aiResponse.text();
+                if (report) {
+                    console.log(`Successfully generated summary using ${modelName}`);
+                    break;
+                }
+            } catch (err: any) {
+                console.error(`Failed with ${modelName}:`, err.message);
+                lastError = err;
+            }
         }
 
-        const model = genAI.getGenerativeModel({ model: modelName });
-        const aiResult = await model.generateContent(prompt);
-        const aiResponse = await aiResult.response;
-        const report = aiResponse.text();
-        console.log('Gemini AI summary generated successfully.');
-
         if (!report) {
-            throw new Error('Could not generate AI response.');
+            throw new Error(`AI generation failed after trying all models. Last error: ${lastError?.message}`);
         }
 
         // Send Email
@@ -187,7 +195,7 @@ app.post('/api/analyze', upload.single('file'), async (req, res) => {
 app.get('/health', (req, res) => {
     res.json({ 
         status: 'OK', 
-        version: '1.0.5', 
+        version: '1.0.6', 
         hasApiKey: !!process.env.GEMINI_API_KEY,
         deployedAt: new Date().toISOString() 
     });
