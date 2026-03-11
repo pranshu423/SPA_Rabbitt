@@ -128,7 +128,9 @@ app.post('/api/analyze', upload.single('file'), async (req, res) => {
         
         Please provide a concise, executive-level summary of this data. Identify the top performing items, key trends, and any noticeable areas of concern. Format the summary professionally with bullet points.`;
 
-        const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+        const modelName = 'gemini-1.5-flash';
+        console.log(`Using Gemini model: ${modelName}`);
+        const model = genAI.getGenerativeModel({ model: modelName });
         const aiResult = await model.generateContent(prompt);
         const aiResponse = await aiResult.response;
         const report = aiResponse.text();
