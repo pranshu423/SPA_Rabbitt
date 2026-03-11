@@ -27,7 +27,7 @@ function App() {
     formData.append('email', email);
 
     try {
-      // Assuming backend runs on port 5000 in dev
+      // Assuming backend runs on port 5001 in dev
       const response = await axios.post('http://localhost:5000/api/analyze', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
@@ -80,7 +80,7 @@ function App() {
             </div>
             {file && (
               <div className="mt-2 flex items-center text-sm text-slate-600 bg-slate-50 p-2 rounded-md border border-slate-200">
-                <CheckCircle2 className="w-4 h-4 text-green-500 mr-2 flex-shrink-0" />
+                <CheckCircle2 className="w-4 h-4 text-green-500 mr-2 shrink-0" />
                 <span className="truncate">{file.name}</span>
               </div>
             )}

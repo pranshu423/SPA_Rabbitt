@@ -155,7 +155,10 @@ app.get('/health', (req, res) => {
     res.json({ status: 'OK' });
 });
 
-app.listen(port, () => {
+// Use http.createServer to keep the process alive (Express 5 compatibility)
+import http from 'http';
+const server = http.createServer(app);
+server.listen(port, () => {
     console.log(`Server running on port ${port}`);
     console.log(`Swagger available at http://localhost:${port}/api-docs`);
 });

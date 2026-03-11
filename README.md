@@ -1,49 +1,194 @@
-# Sales Insight Automator
+# 📊 Sales Insight Automator
 
-A secure "Quick-Response Tool" allowing sales members to upload a CSV/Excel file and instantly receive an AI-generated brief directly to their inbox.
+A secure, containerized **Quick-Response Tool** that enables sales teams to upload CSV/Excel data files and instantly receive an AI-generated executive brief delivered directly to their inbox.
 
-## Tech Stack
-- **Frontend**: React, Vite, Tailwind CSS, TypeScript
-- **Backend**: Node.js, Express, TypeScript, Google Gemini AI API, Nodemailer
-- **Infrastructure**: Docker, Docker Compose, GitHub Actions for CI
+> Built as a rapid prototype for **Rabbitt AI** — showcasing end-to-end data processing, AI summarization, and automated email delivery.
 
-## Architecture & Security
-- **Endpoints**: Secured through basic error handling, payload size limits (via `multer` limit 10MB), and CORS protection. Real-world applications should also implement JWT authentication and rate limiting, but for the scope of this 3-hour MVP, fundamental input validation is active.
-- **Data Protection**: API Keys are never exposed to the frontend. Uploaded files are kept strictly in memory buffers (`multer.memoryStorage()`) and never touch the server disk, parsed instantly, and immediately garbage collected.
+---
 
-## Local Development (Docker)
+## 🚀 Live Demo
 
-You can spin up the entire application using Docker Compose with zero local dependencies (other than Docker).
+| Service | URL |
+|---------|-----|
+| **Frontend (Vercel)** | _Deploy via instructions below_ |
+| **Backend API Docs (Render)** | _Deploy via instructions below_ |
 
-1. Clone the repository.
-2. In the `backend` folder, duplicate `.env.example` to `.env` and fill in your keys:
-   - `GEMINI_API_KEY`: Your Google Gen AI key
-   - `SMTP_USER` & `SMTP_PASS`: Your email credentials for Nodemailer
-3. Run the following command from the root of the project:
-   ```bash
-   docker-compose up --build
-   ```
-4. Access the application:
-   - **Frontend**: http://localhost:80
-   - **Backend API Docs (Swagger)**: http://localhost:5000/api-docs
+---
 
-## Deployment Links (Vercel & Render)
+## 🏗️ Architecture
 
-### Deploying Frontend to Vercel
-1. Connect your GitHub repository to Vercel.
-2. Set the **Framework Preset** to Vite.
-3. Set the **Root Directory** to `frontend`.
-4. Deploy.
+```
+┌─────────────────┐     ┌──────────────────────┐     ┌─────────────┐
+│   React + Vite  │────▶│  Express + TypeScript │────▶│  Google     │
+│   (Frontend)    │     │  (Backend API)        │     │  Gemini AI  │
+│                 │     │                       │     └─────────────┘
+│  Upload CSV/XLS │     │  POST /api/analyze    │
+│  Enter Email    │     │  GET  /api-docs       │────▶┌─────────────┐
+│  Get Feedback   │     │  GET  /health         │     │  Nodemailer │
+└─────────────────┘     └──────────────────────┘     │  (SMTP)     │
+                                                      └─────────────┘
+```
 
-### Deploying Backend to Render
-1. Connect your GitHub repo to Render as a "Web Service".
-2. Set the **Root Directory** to `backend`.
-3. Build Command: `npm install && npm run build`
-4. Start Command: `npm start`
-5. Ensure you define all your environment variables (from `.env.example`) in the Render dashboard.
+### Tech Stack
+- **Frontend**: React 19, Vite, Tailwind CSS v4, TypeScript
+- **Backend**: Node.js, Express 5, TypeScript, Google Gemini AI (`@google/genai`), Nodemailer
+- **DevOps**: Docker, Docker Compose, GitHub Actions CI
+- **Documentation**: Swagger/OpenAPI at `/api-docs`
 
-## Engineer's Log
+---
 
-This rapid-prototype was developed iteratively. The core challenge was parsing varying CSV/Excel structures securely and passing them to Gemini in a token-efficient manner (limited to 100 sample rows) to guarantee quick response times. The Swagger API implementation auto-generates live docs directly from the TypeScript decorators/comments. 
+## ⚡ Quick Start
 
-The Continuous Integration (CI) pipeline handles automated testing and building of both Frontend and Backend on every Push/PR to `main`.
+### Prerequisites
+- Node.js 18+
+- Docker (optional, for containerized setup)
+
+### 1. Clone the Repository
+```bash
+git clone https://github.com/YOUR_USERNAME/SPA_Rabbitt.git
+cd SPA_Rabbitt
+```
+
+### 2. Configure Environment Variables
+```bash
+cp backend/.env.example backend/.env
+```
+Edit `backend/.env` and fill in your credentials:
+```env
+PORT=5000
+GEMINI_API_KEY=your_google_ai_api_key
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=your_email@gmail.com
+SMTP_PASS=your_gmail_app_password
+SMTP_SECURE=false
+```
+
+### 3a. Run with Docker (Recommended)
+```bash
+docker-compose up --build
+```
+- **Frontend**: http://localhost:80
+- **Backend Swagger UI**: http://localhost:5001/api-docs
+
+### 3b. Run without Docker
+**Terminal 1 — Backend:**
+```bash
+cd backend
+npm install
+npm run build
+npm start
+```
+
+**Terminal 2 — Frontend:**
+```bash
+cd frontend
+npm install
+npm run dev
+```
+- **Frontend**: http://localhost:5173
+- **Backend Swagger UI**: http://localhost:5000/api-docs
+
+---
+
+## 🔒 Security Overview
+
+| Measure | Implementation |
+|---------|---------------|
+| **No disk storage** | Uploaded files are processed in memory (`multer.memoryStorage()`) and immediately garbage collected |
+| **File size limit** | Hard cap of 10MB via `multer` to prevent resource abuse |
+| **CORS protection** | Configured via the `cors` middleware |
+| **Secret management** | All API keys and credentials are stored in `.env` (git-ignored) and never exposed to the frontend |
+| **Input validation** | Server validates file presence, email format, and data integrity before processing |
+
+---
+
+## 📁 Project Structure
+
+```
+SPA_Rabbitt/
+├── backend/
+│   ├── src/
+│   │   └── index.ts          # Express server, routes, AI & email integration
+│   ├── tests/
+│   │   └── index.test.ts     # Jest + Supertest unit tests
+│   ├── Dockerfile
+│   ├── .env.example           # Template for required env vars
+│   ├── tsconfig.json
+│   └── package.json
+├── frontend/
+│   ├── src/
+│   │   ├── App.tsx            # Main SPA component
+│   │   ├── index.css          # Tailwind CSS entry
+│   │   └── main.tsx           # React entry point
+│   ├── index.html
+│   ├── Dockerfile
+│   ├── vite.config.ts
+│   └── package.json
+├── .github/
+│   └── workflows/
+│       └── ci.yml             # GitHub Actions CI pipeline
+├── docker-compose.yml
+├── .gitignore
+└── README.md
+```
+
+---
+
+## 🧪 Testing
+
+```bash
+cd backend
+npm test
+```
+
+Runs Jest + Supertest tests covering:
+- `POST /api/analyze` — validates file and email presence
+- `GET /health` — verifies server availability
+
+---
+
+## 🚢 Deployment
+
+### Frontend → Vercel
+1. Import the GitHub repo in Vercel
+2. Set **Root Directory** to `frontend`
+3. Set **Framework Preset** to `Vite`
+4. Deploy
+
+### Backend → Render
+1. Create a new **Web Service** from this repo
+2. Set **Root Directory** to `backend`
+3. **Build Command**: `npm install && npm run build`
+4. **Start Command**: `npm start`
+5. Add all environment variables from `.env.example` in the Render dashboard
+
+---
+
+## 🔄 CI/CD Pipeline
+
+The GitHub Actions workflow (`.github/workflows/ci.yml`) automatically runs on every push/PR to `main`:
+- ✅ Installs dependencies for both frontend and backend
+- ✅ Builds the TypeScript backend
+- ✅ Runs all backend unit tests
+- ✅ Builds the production frontend bundle
+
+---
+
+## 📄 .env.example
+
+```env
+PORT=5000
+GEMINI_API_KEY=YOUR_GEMINI_API_KEY
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=YOUR_EMAIL@gmail.com
+SMTP_PASS=YOUR_APP_PASSWORD
+SMTP_SECURE=false
+```
+
+---
+
+## 📜 License
+
+MIT
